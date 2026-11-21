@@ -28,3 +28,9 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- Bus data lives in `src/data/bus-routes.ts` (generated from the user's route list) and stop map positions in `src/data/stop-coordinates.ts`; every stop name in the routes must have a coordinate entry, or its distance silently counts as zero.
+- All route search logic is pure and client-side in `src/lib/route-finder.ts` (no backend needed); spelling variants of the same stop are merged via its alias map.
+- Distances are estimates: straight-line distance between consecutive stops times a road factor, so the UI must keep labelling them approximate.
+- The search state lives in the URL (`?from=&to=`) so results are shareable.
