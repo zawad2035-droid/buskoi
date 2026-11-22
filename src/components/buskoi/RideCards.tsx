@@ -1,23 +1,46 @@
-import { ArrowRightLeft, Bus as BusIcon, Repeat } from "lucide-react";
+import { ArrowRightLeft, Bus as BusIcon, Clock, MapPin, Repeat } from "lucide-react";
 
-import type { DirectRide, TransferRide } from "@/lib/route-finder";
+import { cn } from "@/lib/utils";
+import { formatDuration, type DirectRide, type TransferRide } from "@/lib/route-finder";
 import { RouteStops } from "./RouteStops";
 
-function Distance({ km, tone = "cyan" }: { km: number; tone?: "cyan" | "lime" }) {
+/** Distance and normal journey time shown side by side. */
+export function TripMetrics({
+  km,
+  min,
+  tone = "cyan",
+  className,
+}: {
+  km: number;
+  min: number;
+  tone?: "cyan" | "lime";
+  className?: string;
+}) {
   return (
-    <div className="text-right">
-      <div
-        className={
-          tone === "cyan"
-            ? "font-display text-3xl font-bold text-neon-cyan text-glow-cyan"
-            : "font-display text-3xl font-bold text-neon-lime"
-        }
-      >
-        {km.toFixed(1)}
-        <span className="ml-1 text-base font-medium text-muted-foreground">km</span>
+    <dl className={cn("grid grid-cols-2 gap-2 sm:min-w-56", className)}>
+      <div className="rounded-xl border border-border bg-background/50 px-3 py-2">
+        <dt className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          <MapPin className="size-3" /> Distance
+        </dt>
+        <dd
+          className={cn(
+            "mt-0.5 font-display text-2xl font-bold",
+            tone === "cyan" ? "text-neon-cyan text-glow-cyan" : "text-neon-lime",
+          )}
+        >
+          {km.toFixed(1)}
+          <span className="ml-1 text-sm font-medium text-muted-foreground">km</span>
+        </dd>
       </div>
-      <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">approx.</div>
-    </div>
+      <div className="rounded-xl border border-border bg-background/50 px-3 py-2">
+        <dt className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          <Clock className="size-3" /> Est. time
+        </dt>
+        <dd className="mt-0.5 font-display text-2xl font-bold text-neon-pink text-glow-pink">
+          <span className="whitespace-nowrap">{formatDuration(min)}</span>
+        </dd>
+      </div>
+    </dl>
   );
 }
 
@@ -26,9 +49,7 @@ function BusTitle({ ride }: { ride: DirectRide }) {
     <div className="min-w-0">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <h3 className="font-display text-xl font-semibold">{ride.bus.name}</h3>
-        {ride.bus.nameBn && (
-          <span className="font-bangla text-lg text-neon-pink">{ride.bus.nameBn}</span>
-        )}
+        {ride.bus.nameBn && <span className="font-bangla text-lg text-neon-pink">{ride.bus.nameBn}</span>}
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
         <ArrowRightLeft className="mr-1.5 inline size-3.5 align-[-2px]" />
@@ -44,14 +65,14 @@ export function DirectRideCard({ ride, index, fastest }: { ride: DirectRide; ind
       className="panel animate-rise rounded-2xl p-5 transition-all hover:border-neon-cyan sm:p-6"
       style={{ animationDelay: `${index * 60}ms` }}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 gap-4">
           <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-accent text-neon-cyan">
             <BusIcon className="size-5" />
           </div>
           <BusTitle ride={ride} />
         </div>
-        <Distance km={ride.distanceKm} />
+        <TripMetrics km={ride.distanceKm} min={ride.durationMin} />
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-2 font-mono text-xs">
         {fastest && (
@@ -61,6 +82,9 @@ export function DirectRideCard({ ride, index, fastest }: { ride: DirectRide; ind
         )}
         <span className="rounded-full border border-border px-2.5 py-1 text-muted-foreground">
           {ride.stops.length - 1} stops
+        </span>
+        <span className="rounded-full border border-border px-2.5 py-1 text-muted-foreground">
+          {ride.bus.service}
         </span>
       </div>
       <div className="mt-5 border-t border-border pt-5">
@@ -76,7 +100,7 @@ export function TransferRideCard({ ride, index }: { ride: TransferRide; index: n
       className="panel animate-rise rounded-2xl p-5 transition-all hover:border-neon-pink sm:p-6"
       style={{ animationDelay: `${index * 60}ms` }}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="font-mono text-xs uppercase tracking-widest text-neon-pink">2 buses · 1 change</p>
           <h3 className="mt-1 font-display text-lg font-semibold">
@@ -87,14 +111,15 @@ export function TransferRideCard({ ride, index }: { ride: TransferRide; index: n
             <span className="font-semibold text-neon-lime">{ride.changeAt}</span>
           </p>
         </div>
-        <Distance km={ride.distanceKm} tone="lime" />
+        <TripMetrics km={ride.distanceKm} min={ride.durationMin} tone="lime" />
       </div>
       <div className="mt-5 grid gap-5 border-t border-border pt-5 sm:grid-cols-2">
         {[ride.first, ride.second].map((leg, i) => (
           <div key={leg.bus.id}>
             <p className="mb-3 font-mono text-xs text-muted-foreground">
               LEG {i + 1} · {leg.bus.name}
-              {leg.bus.nameBn ? ` (${leg.bus.nameBn})` : ""} · {leg.distanceKm.toFixed(1)} km
+              {leg.bus.nameBn ? ` (${leg.bus.nameBn})` : ""} · {leg.distanceKm.toFixed(1)} km ·{" "}
+              {formatDuration(leg.durationMin)}
             </p>
             <RouteStops stops={leg.stops} />
           </div>
