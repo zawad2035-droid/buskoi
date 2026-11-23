@@ -35,9 +35,8 @@ export function StopPicker({ label, placeholder, value, onChange, tone }: Props)
           className={cn(
             "group flex w-full items-center gap-4 rounded-xl border border-border bg-background/60 px-4 py-3 text-left transition-all",
             "focus-visible:outline-none",
-            tone === "cyan"
-              ? "hover:border-neon-cyan focus-visible:glow-cyan data-[state=open]:glow-cyan"
-              : "hover:border-neon-pink focus-visible:glow-pink data-[state=open]:glow-pink",
+            "focus-visible:border-neon-cyan focus-visible:glow-cyan data-[state=open]:border-neon-cyan data-[state=open]:glow-cyan",
+            tone === "cyan" ? "hover:border-neon-cyan" : "hover:border-neon-pink",
           )}
         >
           <span

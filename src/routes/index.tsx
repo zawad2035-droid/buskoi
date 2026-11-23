@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AlertTriangle, ArrowDownUp, Loader2, RotateCcw, Search, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { StopPicker } from "@/components/buskoi/StopPicker";
@@ -129,6 +130,8 @@ function Index() {
     });
   };
 
+  const reduceMotion = useReducedMotion();
+  const [swapTurns, setSwapTurns] = useState(0);
   const best = outcome?.ok ? (outcome.direct[0] ?? outcome.transfers[0]) : undefined;
 
   return (
@@ -159,7 +162,7 @@ function Index() {
       </header>
 
       <main className="mx-auto max-w-5xl px-5 pb-24">
-        <section className="pt-8 pb-10 text-center sm:pt-14">
+        <section className="hero-dots pt-8 pb-10 text-center sm:pt-14">
           <p className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 font-mono text-xs text-muted-foreground">
             <span className="size-1.5 rounded-full bg-neon-lime animate-pulse-dot" /> Dhaka city bus routes
           </p>
@@ -194,10 +197,17 @@ function Index() {
               onClick={() => {
                 setFrom(to);
                 setTo(from);
+                setSwapTurns((n) => n + 1);
               }}
-              className="absolute top-1/2 right-6 z-10 size-10 -translate-y-1/2 rounded-full md:static md:translate-y-0"
+              className="absolute top-1/2 right-6 z-10 size-10 -translate-y-1/2 rounded-full focus-visible:glow-cyan md:static md:translate-y-0"
             >
-              <ArrowDownUp className="md:rotate-90" />
+              <motion.span
+                className="grid place-items-center"
+                animate={{ rotate: swapTurns * 180 }}
+                transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 260, damping: 20 }}
+              >
+                <ArrowDownUp className="md:rotate-90" />
+              </motion.span>
             </Button>
             <div className="flex-1">
               <StopPicker label="To" placeholder="Destination" value={to} onChange={setTo} tone="pink" />
@@ -247,9 +257,15 @@ function Index() {
           <section
             key={resultKey}
             ref={resultsRef}
-            className="mx-auto mt-12 max-w-3xl scroll-mt-6 animate-rise"
+            className="mx-auto mt-12 max-w-3xl scroll-mt-6"
             aria-live="polite"
           >
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, y: 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              className="panel glow-soft mb-6 rounded-3xl p-5 sm:p-6"
+            >
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div className="min-w-0">
                 <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Your trip</p>
@@ -269,12 +285,8 @@ function Index() {
 
             <JourneyLine />
 
-            {!outcome.ok ? (
-              <SearchError onRetry={() => setAttempt((a) => a + 1)} />
-            ) : (
-              <>
-                {best && (
-                  <div className="panel mb-6 flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between">
+                {outcome.ok && best && (
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="font-mono text-[11px] uppercase tracking-widest text-neon-lime">
                         {outcome.direct.length > 0 ? "Shortest direct bus" : "Shortest with one change"}
@@ -284,9 +296,15 @@ function Index() {
                         weather and delays.
                       </p>
                     </div>
-                    <TripMetrics km={best.distanceKm} min={best.durationMin} className="shrink-0" />
+                    <TripMetrics km={best.distanceKm} min={best.durationMin} countUp className="shrink-0" />
                   </div>
                 )}
+            </motion.div>
+
+            {!outcome.ok ? (
+              <SearchError onRetry={() => setAttempt((a) => a + 1)} />
+            ) : (
+              <>
 
                 {outcome.direct.length > 0 ? (
                   <div className="space-y-4">

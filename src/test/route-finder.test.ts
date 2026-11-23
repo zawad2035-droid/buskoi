@@ -119,3 +119,17 @@ describe("operator directory", () => {
     expect(searchOperators("brtc").map((o) => o.name)).toContain("BRTC");
   });
 });
+
+import { serviceBadges } from "@/lib/service-badges";
+
+describe("service badges", () => {
+  const labels = (s: string, op = "") => serviceBadges(s, op).map((b) => b.label);
+  it("labels DTCA franchise routes, with AC when air-conditioned", () => {
+    expect(labels("DTCA Franchise (Non-AC)")).toEqual(["DTCA Franchise"]);
+    expect(labels("DTCA Franchise (AC)")).toEqual(["DTCA Franchise", "AC"]);
+  });
+  it("labels semi-seating and BRTC routes", () => {
+    expect(labels("Non-Franchise (Semi-Seating)")).toEqual(["Semi-Seating"]);
+    expect(labels("State-Owned (Women-Only)", "BRTC")).toEqual(["BRTC"]);
+  });
+});

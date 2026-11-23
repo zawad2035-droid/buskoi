@@ -34,3 +34,4 @@ use the editor.
 - All route search logic is pure and client-side in `src/lib/route-finder.ts` (no backend needed); spelling variants of the same stop are merged via its alias map.
 - Distances are estimates: straight-line distance between consecutive stops times a road factor, so the UI must keep labelling them approximate.
 - The search state lives in the URL (`?from=&to=`) so results are shareable.
+- UI motion uses framer-motion and must honour `useReducedMotion` (plus the global reduced-motion CSS rule); animations never delay or gate search results.

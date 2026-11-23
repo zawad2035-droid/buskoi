@@ -284,3 +284,25 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Very faint dot grid behind the hero that fades into the background */
+@utility hero-dots {
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -4rem -1.25rem -2rem;
+    z-index: -1;
+    pointer-events: none;
+    background-image: radial-gradient(
+      circle,
+      color-mix(in oklab, var(--neon-cyan) 6%, transparent) 1.2px,
+      transparent 1.6px
+    );
+    background-size: 20px 20px;
+    mask-image: radial-gradient(ellipse 65% 75% at 50% 40%, #000 25%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse 65% 75% at 50% 40%, #000 25%, transparent 80%);
+  }
+}
